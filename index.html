@@ -197,50 +197,30 @@
   </header>
 
   <main>
-    <div class="grid">
-      <section>
-        <div class="panel">
-          <div class="controls">
-            <select id="motoristaFilter" class="select" aria-label="Filtrar por motorista">
-              <option value="">Motorista: — Todos —</option>
-            </select>
+  <section>
+    <div class="panel">
+      <div class="controls">
+        <select id="motoristaFilter" class="select" aria-label="Filtrar por motorista">
+          <option value="">Motorista: — Todos —</option>
+        </select>
 
-            <select id="mesFilter" class="select" aria-label="Filtrar por mês processamento">
-              <option value="">Mês: — Todos —</option>
-            </select>
+        <select id="mesFilter" class="select" aria-label="Filtrar por mês processamento">
+          <option value="">Mês: — Todos —</option>
+        </select>
 
-            <div style="flex:1"></div>
+        <div style="flex:1"></div>
+        <div class="small">Registos: <span id="count">0</span></div>
+      </div>
 
-            <div class="small">Registos: <span id="count">0</span></div>
-          </div>
-
-          <div id="list" class="list" aria-live="polite">
-            <!-- items aqui -->
-          </div>
-        </div>
-      </section>
-
-      <aside>
-        <div class="panel">
-          <h3 style="margin:0 0 8px 0">Resumo</h3>
-          <div class="small">Selecione filtros para restringir a lista. Se nada for seleccionado, serão mostrados todos os registos.</div>
-
-          <div style="margin-top:12px;">
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-              <span class="badge" id="badgeTotal">Total 0</span>
-              <span style="font-size:13px; color:var(--muted);">• Ordenado por data e motorista</span>
-            </div>
-            <div style="margin-top:10px;">
-              <button id="openGithub" class="btn btn-primary" style="width:100%;">Abrir no GitHub</button>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <div id="list" class="list" aria-live="polite">
+        <!-- items aqui -->
+      </div>
     </div>
-  </main>
+  </section>
+</main>
 
   <footer>
-    Criado automaticamente • Basta colocar este ficheiro e o logo no seu repositório GitHub.
+    Criado Luis Francisco
   </footer>
 
   <!-- Spinner / overlay -->
@@ -555,9 +535,6 @@
       applyFiltersAndRender();
     });
     qs('#refreshBtn').addEventListener('click', () => fetchAndLoad());
-    qs('#openGithub').addEventListener('click', () => {
-      // aponta para o repo (sugestão, alterar para o seu repo)
-      window.open('https://github.com', '_blank');
     });
 
     // carregar inicialmente
