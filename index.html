@@ -8,7 +8,6 @@
 <style>
   :root { --verde:#78c142; --azul:#0e3a5a; --bg:#f6f8fb; --muted:#64748b; }
   *{box-sizing:border-box}
-  /* 1. NOVO: Aplicar a fonte Inter */
   body{ 
     margin:0; 
     font-family:'Inter', sans-serif; 
@@ -16,8 +15,8 @@
     color:#0b1b2b; 
   }
   header{ display:flex; gap:12px; align-items:center; padding:14px 18px; background:linear-gradient(90deg,var(--verde),#6fc03f); color:white; }
-  /* 2. CORRIGIDO: Reduzir tamanho do logo no header */
-  header img{ width:30px; height:30px; object-fit:contain; }
+  /* 1. CORRIGIDO: O logo tem o dobro do tamanho da fonte (36px) */
+  header img{ width:36px; height:36px; object-fit:contain; }
   header h1{ margin:0; font-size:18px; }
   main{ max-width:1100px; margin:18px auto; padding:0 16px; }
   .controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
@@ -27,10 +26,16 @@
   th,td{ padding:10px 12px; border-bottom:1px solid #eef3f6; text-align:left; font-size:14px; }
   th{ background:linear-gradient(180deg,#f0fbf0,#f7fff7); color:var(--azul); font-weight:700; }
   tr:hover td{ background:#fbfeff; }
-  /* 3. CSS para o spinner */
   #spinner{ display:flex; justify-content:center; align-items:center; height:140px; }
-  #spinner img{ width:36px; height:36px; animation:spin 1.2s linear infinite; }
+  #spinner img{ width:36px; height:36px; /* Ajuste para o mesmo tamanho do header logo */
+    /* 2. CORRIGIDO: Adicionar prefixo para maior compatibilidade de animação */
+    -webkit-animation: spin 1.2s linear infinite; 
+    animation: spin 1.2s linear infinite; 
+  }
+  /* 2. CORRIGIDO: Adicionar prefixo para maior compatibilidade de animação */
+  @-webkit-keyframes spin { from{-webkit-transform:rotate(0)} to{-webkit-transform:rotate(360deg)} }
   @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+  
   .error{ padding:12px; background:#fff1f2; border:1px solid #ffd4d7; color:#9b1c1c; border-radius:8px; }
   @media (max-width:720px){ th,td{ font-size:13px; padding:8px 10px } header h1{ font-size:16px } }
 </style>
@@ -48,7 +53,7 @@
       <div id="count">Total 0</div>
     </div>
 
-        <div id="spinner" style="display:none;"><img src="logo.png" alt="A carregar..."></div>
+    <div id="spinner" style="display:none;"><img src="logo.png" alt="A carregar..."></div>
     <div id="error" style="display:none;"></div>
     <div id="data" style="display:none;"></div>
   </main>
@@ -89,7 +94,7 @@ function getMesProcessamento(dateStr){
   return meses[mes] + " " + ano;
 }
 
-// 4. FORMATADOR DE HORA: função para formatar hora para HH:mm (ex: "9:0" -> "09:00")
+// FORMATADOR DE HORA: função para formatar hora para HH:mm (ex: "9:0" -> "09:00")
 function formatTime(timeStr) {
     if (!timeStr) return '';
     timeStr = String(timeStr); 
@@ -100,7 +105,6 @@ function formatTime(timeStr) {
     return h + ':' + m;
 }
 
-// 3. CORRIGIDO: Funções de visibilidade para garantir o spinner
 function showSpinner(){ 
   spinnerEl.style.display = ""; 
   errorEl.style.display = "none"; 
@@ -202,9 +206,9 @@ function render(){
       '<td>' + (r.Viatura || '') + '</td>' +
       '<td>' + (r.Motorista || '') + '</td>' +
       '<td>' + (r.Cliente || '') + '</td>' +
-      '<td>' + formatTime(r.HoraEntrada) + '</td>' + // 4. Hora formatada (HH:mm)
+      '<td>' + formatTime(r.HoraEntrada) + '</td>' + 
       '<td>' + (r.KmEntrada || '') + '</td>' +
-      '<td>' + formatTime(r.HoraSaida) + '</td>' + // 4. Hora formatada (HH:mm)
+      '<td>' + formatTime(r.HoraSaida) + '</td>' + 
       '<td>' + (r.KmSaida || '') + '</td>' +
     '</tr>';
   });
