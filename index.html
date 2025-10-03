@@ -15,7 +15,7 @@
     color:#0b1b2b; 
   }
   header{ display:flex; gap:12px; align-items:center; padding:14px 18px; background:linear-gradient(90deg,var(--verde),#6fc03f); color:white; }
-  /* 1. CORRIGIDO: O logo tem o dobro do tamanho da fonte (36px) */
+  /* 1. LOGO: 36px (o dobro de 18px) */
   header img{ width:36px; height:36px; object-fit:contain; }
   header h1{ margin:0; font-size:18px; }
   main{ max-width:1100px; margin:18px auto; padding:0 16px; }
@@ -26,15 +26,26 @@
   th,td{ padding:10px 12px; border-bottom:1px solid #eef3f6; text-align:left; font-size:14px; }
   th{ background:linear-gradient(180deg,#f0fbf0,#f7fff7); color:var(--azul); font-weight:700; }
   tr:hover td{ background:#fbfeff; }
+  
+  /* 2. SPINNER REFORÇADO: Garantir a rotação em diferentes browsers */
   #spinner{ display:flex; justify-content:center; align-items:center; height:140px; }
-  #spinner img{ width:36px; height:36px; /* Ajuste para o mesmo tamanho do header logo */
-    /* 2. CORRIGIDO: Adicionar prefixo para maior compatibilidade de animação */
-    -webkit-animation: spin 1.2s linear infinite; 
+  #spinner img{ 
+    width:36px; 
+    height:36px; 
+    object-fit:contain;
+    -webkit-animation: spin 1.2s linear infinite; /* Chrome, Safari, Opera */
     animation: spin 1.2s linear infinite; 
   }
-  /* 2. CORRIGIDO: Adicionar prefixo para maior compatibilidade de animação */
-  @-webkit-keyframes spin { from{-webkit-transform:rotate(0)} to{-webkit-transform:rotate(360deg)} }
-  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+  
+  /* Regras de Keyframes com prefixos */
+  @-webkit-keyframes spin { 
+    from {-webkit-transform: rotate(0deg);} 
+    to {-webkit-transform: rotate(360deg);} 
+  }
+  @keyframes spin { 
+    from {transform: rotate(0deg);} 
+    to {transform: rotate(360deg);} 
+  }
   
   .error{ padding:12px; background:#fff1f2; border:1px solid #ffd4d7; color:#9b1c1c; border-radius:8px; }
   @media (max-width:720px){ th,td{ font-size:13px; padding:8px 10px } header h1{ font-size:16px } }
@@ -94,7 +105,7 @@ function getMesProcessamento(dateStr){
   return meses[mes] + " " + ano;
 }
 
-// FORMATADOR DE HORA: função para formatar hora para HH:mm (ex: "9:0" -> "09:00")
+// FORMATADOR DE HORA: função para formatar hora para HH:mm
 function formatTime(timeStr) {
     if (!timeStr) return '';
     timeStr = String(timeStr); 
@@ -105,8 +116,9 @@ function formatTime(timeStr) {
     return h + ':' + m;
 }
 
+// Funções de visibilidade
 function showSpinner(){ 
-  spinnerEl.style.display = ""; 
+  spinnerEl.style.display = "flex"; /* Usar flex para centralizar */
   errorEl.style.display = "none"; 
   dataEl.style.display = "none"; 
 }
