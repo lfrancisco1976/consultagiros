@@ -2,34 +2,54 @@
 <html lang="pt-PT">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Planeamento — Transportes</title>
 <style>
-  :root { --verde:#78c142; --azul:#0e3a5a; --bg:#f6f8fb; --muted:#64748b; }
-  *{box-sizing:border-box}
-  body{ margin:0; font-family:Inter,Segoe UI,Arial; background:var(--bg); color:#0b1b2b; }
-  header{ display:flex; gap:12px; align-items:center; padding:14px 18px; background:linear-gradient(90deg,var(--verde),#6fc03f); color:white; }
-  header img{ width:40px; height:40px; object-fit:contain; }
-  header h1{ margin:0; font-size:18px; }
-  main{ max-width:1100px; margin:18px auto; padding:0 16px; }
-  .controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
-  select{ padding:9px 12px; border-radius:8px; border:1px solid #e6f0f3; background:white; min-width:180px; }
-  #count{ margin-left:auto; color:var(--muted); font-weight:600; }
-  table{ width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 6px 20px rgba(2,6,23,0.06); }
-  th,td{ padding:10px 12px; border-bottom:1px solid #eef3f6; text-align:left; font-size:14px; }
-  th{ background:linear-gradient(180deg,#f0fbf0,#f7fff7); color:var(--azul); font-weight:700; }
-  tr:hover td{ background:#fbfeff; }
-  #spinner{ display:flex; justify-content:center; align-items:center; height:140px; }
-  #spinner img{ width:36px; height:36px; animation:spin 1.2s linear infinite; }
-  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
-  .error{ padding:12px; background:#fff1f2; border:1px solid #ffd4d7; color:#9b1c1c; border-radius:8px; }
-  @media (max-width:720px){ th,td{ font-size:13px; padding:8px 10px } header h1{ font-size:16px } }
+  :root {
+    --verde:#78c142;
+    --azul:#0e3a5a;
+    --bg:#f6f8fb;
+    --muted:#64748b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,Segoe UI,Arial;background:var(--bg);color:#0b1b2b;line-height:1.4;}
+  header{display:flex;align-items:center;gap:10px;padding:12px 16px;
+    background:linear-gradient(90deg,var(--verde),#6fc03f);color:#fff;}
+  header img{width:36px;height:36px;object-fit:contain;}
+  header h1{font-size:18px;font-weight:600;}
+
+  main{max-width:1100px;margin:16px auto;padding:0 12px;}
+
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;}
+  select{flex:1;min-width:150px;padding:9px 10px;border:1px solid #dfe6ec;border-radius:8px;background:#fff;}
+  #count{margin-left:auto;color:var(--muted);font-weight:600;font-size:14px;}
+
+  #spinner{display:flex;justify-content:center;align-items:center;height:120px;}
+  #spinner img{width:32px;height:32px;animation:spin 1.2s linear infinite;}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+  .error{padding:12px;background:#fff1f2;border:1px solid #ffd4d7;color:#9b1c1c;border-radius:8px;margin-bottom:10px;}
+
+  /* === Estilo tabela no desktop === */
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;
+        box-shadow:0 4px 14px rgba(0,0,0,0.05);}
+  th,td{padding:10px 12px;border-bottom:1px solid #f0f3f6;text-align:left;font-size:14px;}
+  th{background:#f8fff8;color:var(--azul);font-weight:600;}
+
+  /* === Layout mobile: virar tabela em cartões === */
+  @media(max-width:720px){
+    table, thead, tbody, th, td, tr {display:block;}
+    thead{display:none;}
+    tr{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.04);margin-bottom:10px;padding:10px;}
+    td{border:none;padding:6px 0;font-size:14px;}
+    td::before{content:attr(data-label);font-weight:600;color:var(--muted);display:block;font-size:12px;margin-bottom:2px;}
+  }
 </style>
 </head>
 <body>
   <header>
     <img src="logo.png" alt="logo">
-    <h1>Planeamento — Transportes</h1>
+    <h1>Planeamento</h1>
   </header>
 
   <main>
@@ -45,231 +65,56 @@
   </main>
 
 <script>
-/* === CONFIG: coloque aqui o seu endpoint Apps Script (o /exec) === */
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbyiC-zrIZMbOnr6yBSHHlwGmzGZSqJWAIaf6D6QELnKulXbGXCJ7-LXHtn5FTP7cNHY/exec";
-/* ================================================================= */
+/* ENDPOINT Apps Script */
+const ENDPOINT="https://script.google.com/macros/s/AKfycbyiC-zrIZMbOnr6yBSHHlwGmzGZSqJWAIaf6D6QELnKulXbGXCJ7-LXHtn5FTP7cNHY/exec";
 
-const spinnerEl = document.getElementById('spinner');
-const errorEl = document.getElementById('error');
-const dataEl = document.getElementById('data');
-const motoristaSel = document.getElementById('motoristaFilter');
-const mesSel = document.getElementById('mesFilter');
-const countEl = document.getElementById('count');
+const spinnerEl=document.getElementById('spinner');
+const errorEl=document.getElementById('error');
+const dataEl=document.getElementById('data');
+const motoristaSel=document.getElementById('motoristaFilter');
+const mesSel=document.getElementById('mesFilter');
+const countEl=document.getElementById('count');
+let allData=[];
 
-let allData = [];
+function parseDate(d){if(!d)return null;const p=String(d).split('/');if(p.length!==3)return new Date(d);return new Date(+p[2],+p[1]-1,+p[0]);}
+function getMesProc(ds){const m=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];const d=parseDate(ds);if(!d)return"";let mes=d.getMonth(),ano=(""+d.getFullYear()).slice(-2),dia=d.getDate();if(dia>=16){mes=(mes+1)%12;if(mes===0)ano=(""+(d.getFullYear()+1)).slice(-2);}return m[mes]+" "+ano;}
 
-// converter "dd/MM/yyyy" para Date object
-function parseDate(d){
-  if (!d) return null;
-  const parts = String(d).split('/');
-  if (parts.length !== 3) return new Date(d); // fallback
-  const dia = parseInt(parts[0],10), mes = parseInt(parts[1],10)-1, ano = parseInt(parts[2],10);
-  return new Date(ano, mes, dia);
-}
+function showSpinner(){spinnerEl.style.display="";errorEl.style.display="none";dataEl.style.display="none";}
+function hideSpinner(){spinnerEl.style.display="none";dataEl.style.display="";}
+function showError(msg){errorEl.style.display="";errorEl.className="error";errorEl.textContent=msg;spinnerEl.style.display="none";dataEl.style.display="none";}
 
-// calcular Mês de processamento (16/dd -> mês seguinte)
-function getMesProcessamento(dateStr){
-  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  const d = parseDate(dateStr);
-  if (!d || isNaN(d)) return "";
-  let mes = d.getMonth(), ano = String(d.getFullYear()).slice(-2), dia = d.getDate();
-  if (dia >= 16){
-    mes = (mes + 1) % 12;
-    if (mes === 0) ano = String(d.getFullYear()+1).slice(-2);
-  }
-  return meses[mes] + " " + ano;
-}
-
-function showSpinner(){ spinnerEl.style.display = ""; errorEl.style.display = "none"; dataEl.style.display = "none"; }
-function hideSpinner(){ spinnerEl.style.display = "none"; dataEl.style.display = ""; }
-
-function showError(msg){
-  errorEl.style.display = "";
-  errorEl.className = "error";
-  errorEl.textContent = msg;
-  spinnerEl.style.display = "none";
-  dataEl.style.display = "none";
-}
-
-// processa a estrutura recebida ({ data: [...] })
 function processPayload(payload){
-  if (!payload) { showError("Resposta inválida do servidor."); return; }
-  const arr = Array.isArray(payload.data) ? payload.data : (Array.isArray(payload) ? payload : []);
-  // normalizar para colunas esperadas
-  allData = arr.map(r => ({
-    Data: r["Data"] || r["DATA"] || r.data || "",
-    Viatura: r["Viatura"] || r["VIATURA"] || r.viatura || "",
-    Motorista: r["Motorista"] || r["MOTORISTA"] || r.motorista || "",
-    Cliente: r["Cliente"] || r["CLIENTE"] || r.cliente || "",
-    HoraEntrada: r["Hora Entrada"] || r["HORA ENTRADA"] || r["HoraEntrada"] || r.horaEntrada || "",
-    KmEntrada: r["Km Entrada"] || r["KM ENTRADA"] || r.kmEntrada || "",
-    HoraSaida: r["Hora Saída"] || r["HORA SAÍDA"] || r["HoraSaida"] || r.horaSaida || "",
-    KmSaida: r["Km Saída"] || r["KM SAÍDA"] || r.kmSaida || ""
-  }));
+  const arr=Array.isArray(payload.data)?payload.data:[];
+  allData=arr.map(r=>({Data:r["Data"]||"",Viatura:r["Viatura"]||"",Motorista:r["Motorista"]||"",Cliente:r["Cliente"]||"",HoraEntrada:r["Hora Entrada"]||"",KmEntrada:r["Km Entrada"]||"",HoraSaida:r["Hora Saída"]||"",KmSaida:r["Km Saída"]||""}));
 
-  // preencher filtros
-  const motoristas = Array.from(new Set(allData.map(x=>x.Motorista).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
-  motoristaSel.innerHTML = '<option value="">Motorista — Todos</option>';
-  motoristas.forEach(m => {
-    const opt = document.createElement('option'); opt.value = m; opt.textContent = m;
-    motoristaSel.appendChild(opt);
-  });
+  const motSet=[...new Set(allData.map(x=>x.Motorista).filter(Boolean))].sort();
+  motoristaSel.innerHTML='<option value="">Motorista — Todos</option>'+motSet.map(m=>`<option>${m}</option>`).join("");
+  const mesSet=[...new Set(allData.map(x=>getMesProc(x.Data)).filter(Boolean))].sort((a,b)=>new Date("1 "+a)-new Date("1 "+b));
+  mesSel.innerHTML='<option value="">Mês — Todos</option>'+mesSet.map(m=>`<option>${m}</option>`).join("");
 
-  const meses = Array.from(new Set(allData.map(x=>getMesProcessamento(x.Data)).filter(Boolean)));
-  mesSel.innerHTML = '<option value="">Mês — Todos</option>';
-  meses.sort((a,b)=> {
-    // ordenar por data real: transformar em 1 <month> 20yy
-    try {
-      const pa = a.split(' '), pb = b.split(' ');
-      const da = new Date("1 " + pa[0] + " 20" + pa[1]);
-      const db = new Date("1 " + pb[0] + " 20" + pb[1]);
-      return da - db;
-    } catch (e) { return a.localeCompare(b); }
-  }).forEach(m => {
-    const opt = document.createElement('option'); opt.value = m; opt.textContent = m;
-    mesSel.appendChild(opt);
-  });
-
-  // ligar eventos de filtro
-  motoristaSel.onchange = render;
-  mesSel.onchange = render;
-
+  motoristaSel.onchange=render;mesSel.onchange=render;
   render();
 }
 
-// rendereiza tabela filtrada e ordenada
 function render(){
-  const motoristaVal = motoristaSel.value;
-  const mesVal = mesSel.value;
-  let list = allData.slice();
+  const mot=motoristaSel.value, mes=mesSel.value;
+  let list=allData.slice();
+  if(mot)list=list.filter(r=>r.Motorista===mot);
+  if(mes)list=list.filter(r=>getMesProc(r.Data)===mes);
 
-  if (motoristaVal) list = list.filter(r => r.Motorista === motoristaVal);
-  if (mesVal) list = list.filter(r => getMesProcessamento(r.Data) === mesVal);
+  list.sort((a,b)=>parseDate(a.Data)-parseDate(b.Data) || a.Motorista.localeCompare(b.Motorista));
+  countEl.textContent="Total "+list.length;
+  if(!list.length){dataEl.innerHTML='<div style="padding:12px;color:var(--muted)">Nenhum registo.</div>';return;}
 
-  // ordenar por Data real e depois por Motorista
-  list.sort((a,b) => {
-    const da = parseDate(a.Data), db = parseDate(b.Data);
-    if (!da || !db) {
-      if (da && !db) return -1;
-      if (!da && db) return 1;
-      return (a.Motorista||"").localeCompare(b.Motorista||"");
-    }
-    if (da - db !== 0) return da - db;
-    return (a.Motorista||"").localeCompare(b.Motorista||"");
-  });
-
-  countEl.textContent = "Total " + list.length;
-
-  if (list.length === 0) {
-    dataEl.innerHTML = '<div style="padding:14px;color:var(--muted)">Nenhum registo encontrado.</div>';
-    return;
-  }
-
-  let html = '<table><thead><tr>';
-  ["Data","Viatura","Motorista","Cliente","Hora Entrada","Km Entrada","Hora Saída","Km Saída"].forEach(h => html += '<th>' + h + '</th>');
-  html += '</tr></thead><tbody>';
-  list.forEach(r => {
-    html += '<tr>' +
-      '<td>' + (r.Data || '') + '</td>' +
-      '<td>' + (r.Viatura || '') + '</td>' +
-      '<td>' + (r.Motorista || '') + '</td>' +
-      '<td>' + (r.Cliente || '') + '</td>' +
-      '<td>' + (r.HoraEntrada || '') + '</td>' +
-      '<td>' + (r.KmEntrada || '') + '</td>' +
-      '<td>' + (r.HoraSaida || '') + '</td>' +
-      '<td>' + (r.KmSaida || '') + '</td>' +
-    '</tr>';
-  });
-  html += '</tbody></table>';
-  dataEl.innerHTML = html;
-}
-
-/* ========== tentativa com fetch JSON normal ========== */
-async function tryFetchJSON() {
-  const url = ENDPOINT;
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      // tenta ler texto para diagnóstico
-      const txt = await res.text().catch(()=>null);
-      throw new Error('HTTP ' + res.status + (txt ? ' — ' + txt.slice(0,200) : ''));
-    }
-    // se o content-type não for json pode falhar aqui
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      // ainda assim tenta parse
-      const txt = await res.text();
-      try {
-        const parsed = JSON.parse(txt);
-        return parsed;
-      } catch (e) {
-        throw new Error('Resposta não é JSON (content-type: ' + contentType + ').');
-      }
-    }
-    const json = await res.json();
-    return json;
-  } catch (err) {
-    throw err;
-  }
-}
-
-/* ========== fallback JSONP (usa ?callback=nome) ========== */
-function tryJSONP() {
-  return new Promise((resolve, reject) => {
-    const callbackName = 'apps_cb_' + Date.now();
-    // timeout se não responder
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error('JSONP timeout'));
-    }, 10000);
-
-    function cleanup() {
-      clearTimeout(timeout);
-      const s = document.getElementById(callbackName + '_script');
-      if (s) s.remove();
-      try { delete window[callbackName]; } catch(e) {}
-    }
-
-    window[callbackName] = function(data) {
-      cleanup();
-      resolve(data);
-    };
-
-    const script = document.createElement('script');
-    script.id = callbackName + '_script';
-    script.src = ENDPOINT + (ENDPOINT.indexOf('?') === -1 ? '?' : '&') + 'callback=' + callbackName + '&_=' + Date.now();
-    script.onerror = function() {
-      cleanup();
-      reject(new Error('Erro ao carregar JSONP'));
-    };
-    document.body.appendChild(script);
-  });
-}
-
-/* ========== carga de dados com tentativa fetch -> fallback JSONP ========== */
-async function loadData() {
-  showSpinner();
-  errorEl.style.display = 'none';
-  try {
-    // tenta JSON normal
-    const json = await tryFetchJSON();
-    processPayload(json);
-  } catch (err) {
-    console.warn('Fetch JSON falhou, a tentar JSONP...', err);
-    try {
-      const jsonp = await tryJSONP();
-      processPayload(jsonp);
-    } catch (err2) {
-      console.error('JSONP também falhou', err2);
-      showError('Erro ao carregar dados. Verifique a implantação do Apps Script e permissões.\nDetalhe: ' + (err2.message || err.message || 'Erro desconhecido') );
-    }
-  } finally {
-    hideSpinner();
-  }
-}
-
-/* iniciar */
-loadData();
-</script>
-</body>
-</html>
+  let html='<table><thead><tr><th>Data</th><th>Viatura</th><th>Motorista</th><th>Cliente</th><th>Hora Entrada</th><th>Km Entrada</th><th>Hora Saída</th><th>Km Saída</th></tr></thead><tbody>';
+  list.forEach(r=>{
+    html+=`<tr>
+      <td data-label="Data">${r.Data}</td>
+      <td data-label="Viatura">${r.Viatura}</td>
+      <td data-label="Motorista">${r.Motorista}</td>
+      <td data-label="Cliente">${r.Cliente}</td>
+      <td data-label="Hora Entrada">${r.HoraEntrada}</td>
+      <td data-label="Km Entrada">${r.KmEntrada}</td>
+      <td data-label="Hora Saída">${r.HoraSaida}</td>
+      <td data-label="Km Saída">${r.KmSaida}</td>
+    <
