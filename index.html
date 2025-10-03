@@ -22,10 +22,9 @@
       justify-content: center;
       gap: 10px;
     }
-
     header img {
-      height: 32px;
-      width: 32px;
+      height: 28px;
+      width: 28px;
       animation: spin 1.5s linear infinite;
     }
     @keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
@@ -52,18 +51,26 @@
     .card {
       background: #fff;
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
       margin-bottom: 10px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
-    .card h3 {
-      margin: 0 0 5px;
-      font-size: 16px;
+    .date {
+      font-weight: bold;
       color: #c80000;
+      font-size: 15px;
     }
-    .card p {
-      margin: 2px 0;
+    .row {
+      display: flex;
+      justify-content: space-between;
       font-size: 14px;
+    }
+    .highlight {
+      font-weight: bold;
+      color: #222;
     }
 
     .loading {
@@ -80,7 +87,7 @@
 <body>
   <header>
     <img src="logo.png" id="logo" alt="logo">
-    <h1>Planeamento Transportes</h1>
+    <h1>Planeamento</h1>
   </header>
 
   <div class="filters">
@@ -163,11 +170,9 @@
 
       document.getElementById("list").innerHTML = filtrados.map(d => `
         <div class="card">
-          <h3>${d.Data} - ${d.Motorista}</h3>
-          <p><strong>Viatura:</strong> ${d.Viatura || ""}</p>
-          <p><strong>Cliente:</strong> ${d.Cliente || ""}</p>
-          <p><strong>Entrada:</strong> ${d["Hora Entrada"] || ""} | Km: ${d["Km Entrada"] || ""}</p>
-          <p><strong>Saída:</strong> ${d["Hora Saída"] || ""} | Km: ${d["Km Saída"] || ""}</p>
+          <div class="date">${d.Data} • ${d.Motorista || ""}</div>
+          <div class="row"><span>Entrada</span> <span class="highlight">${d["Hora Entrada"] || ""} (${d["Km Entrada"] || ""} km)</span></div>
+          <div class="row"><span>Saída</span> <span class="highlight">${d["Hora Saída"] || ""} (${d["Km Saída"] || ""} km)</span></div>
         </div>
       `).join("") || "<p style='text-align:center'>Sem registos.</p>";
     }
