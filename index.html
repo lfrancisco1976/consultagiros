@@ -4,12 +4,20 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Planeamento — Transportes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root { --verde:#78c142; --azul:#0e3a5a; --bg:#f6f8fb; --muted:#64748b; }
   *{box-sizing:border-box}
-  body{ margin:0; font-family:Inter,Segoe UI,Arial; background:var(--bg); color:#0b1b2b; }
+  /* NOVO: Aplicar a fonte Inter */
+  body{ 
+    margin:0; 
+    font-family:'Inter', sans-serif; 
+    background:var(--bg); 
+    color:#0b1b2b; 
+  }
   header{ display:flex; gap:12px; align-items:center; padding:14px 18px; background:linear-gradient(90deg,var(--verde),#6fc03f); color:white; }
-  header img{ width:40px; height:40px; object-fit:contain; }
+  /* RETIFICADO: Reduzir tamanho do logo no header */
+  header img{ width:30px; height:30px; object-fit:contain; }
   header h1{ margin:0; font-size:18px; }
   main{ max-width:1100px; margin:18px auto; padding:0 16px; }
   .controls{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
@@ -19,6 +27,7 @@
   th,td{ padding:10px 12px; border-bottom:1px solid #eef3f6; text-align:left; font-size:14px; }
   th{ background:linear-gradient(180deg,#f0fbf0,#f7fff7); color:var(--azul); font-weight:700; }
   tr:hover td{ background:#fbfeff; }
+  /* CORRIGIDO: O spinner só deve ser visível quando o JS o define */
   #spinner{ display:flex; justify-content:center; align-items:center; height:140px; }
   #spinner img{ width:36px; height:36px; animation:spin 1.2s linear infinite; }
   @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
@@ -39,9 +48,9 @@
       <div id="count">Total 0</div>
     </div>
 
-    <div id="spinner"><img src="logo.png" alt="A carregar..."></div>
+        <div id="spinner" style="display:none;"><img src="logo.png" alt="A carregar..."></div>
     <div id="error" style="display:none;"></div>
-    <div id="data"></div>
+    <div id="data" style="display:none;"></div>
   </main>
 
 <script>
@@ -80,23 +89,27 @@ function getMesProcessamento(dateStr){
   return meses[mes] + " " + ano;
 }
 
-// NOVO: função para formatar hora para HH:mm (ex: "9:0" -> "09:00" ou "9" -> "09:00")
+// FORMATADOR DE HORA: função para formatar hora para HH:mm (ex: "9:0" -> "09:00")
 function formatTime(timeStr) {
     if (!timeStr) return '';
-    // Garante que é uma string
     timeStr = String(timeStr); 
-    // Divide por ':'
     const parts = timeStr.split(':');
-    // Hora: preenche com '0' à esquerda se for necessário (2 dígitos)
     const h = parts[0] ? parts[0].padStart(2, '0') : '00';
-    // Minuto: preenche com '0' à esquerda se for necessário (2 dígitos), ou assume '00'
     const m = parts[1] ? parts[1].padStart(2, '0') : '00';
     
     return h + ':' + m;
 }
 
-function showSpinner(){ spinnerEl.style.display = ""; errorEl.style.display = "none"; dataEl.style.display = "none"; }
-function hideSpinner(){ spinnerEl.style.display = "none"; dataEl.style.display = ""; }
+// CORRIGIDO: Funções de visibilidade para garantir o spinner
+function showSpinner(){ 
+  spinnerEl.style.display = ""; 
+  errorEl.style.display = "none"; 
+  dataEl.style.display = "none"; 
+}
+function hideSpinner(){ 
+  spinnerEl.style.display = "none"; 
+  dataEl.style.display = ""; 
+}
 
 function showError(msg){
   errorEl.style.display = "";
@@ -189,9 +202,9 @@ function render(){
       '<td>' + (r.Viatura || '') + '</td>' +
       '<td>' + (r.Motorista || '') + '</td>' +
       '<td>' + (r.Cliente || '') + '</td>' +
-      '<td>' + formatTime(r.HoraEntrada) + '</td>' + // APLICADO: Formato HH:mm
+      '<td>' + formatTime(r.HoraEntrada) + '</td>' + // Hora formatada
       '<td>' + (r.KmEntrada || '') + '</td>' +
-      '<td>' + formatTime(r.HoraSaida) + '</td>' + // APLICADO: Formato HH:mm
+      '<td>' + formatTime(r.HoraSaida) + '</td>' + // Hora formatada
       '<td>' + (r.KmSaida || '') + '</td>' +
     '</tr>';
   });
