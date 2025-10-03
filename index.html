@@ -117,4 +117,21 @@ function render(){
       <td data-label="Km Entrada">${r.KmEntrada}</td>
       <td data-label="Hora Saída">${r.HoraSaida}</td>
       <td data-label="Km Saída">${r.KmSaida}</td>
-    <
+    </tr>`;
+  });
+  html+='</tbody></table>';dataEl.innerHTML=html;
+}
+
+async function loadData(){
+  showSpinner();
+  try{
+    const res=await fetch(ENDPOINT+"?cachebust="+Date.now());
+    const json=await res.json();
+    processPayload(json);
+    hideSpinner();
+  }catch(e){showError("Erro ao carregar dados: "+e.message);}
+}
+loadData();
+</script>
+</body>
+</html>
