@@ -1,137 +1,181 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Planeamento — Transportes</title>
-<style>
-  :root {
-    --verde:#78c142;
-    --azul:#0e3a5a;
-    --bg:#f6f8fb;
-    --muted:#64748b;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Inter,Segoe UI,Arial;background:var(--bg);color:#0b1b2b;line-height:1.4;}
-  header{display:flex;align-items:center;gap:10px;padding:12px 16px;
-    background:linear-gradient(90deg,var(--verde),#6fc03f);color:#fff;}
-  header img{width:36px;height:36px;object-fit:contain;}
-  header h1{font-size:18px;font-weight:600;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planeamento Transportes</title>
+  <style>
+    body {
+      margin: 0; 
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
 
-  main{max-width:1100px;margin:16px auto;padding:0 12px;}
+    header {
+      background: #c80000;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
 
-  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;}
-  select{flex:1;min-width:150px;padding:9px 10px;border:1px solid #dfe6ec;border-radius:8px;background:#fff;}
-  #count{margin-left:auto;color:var(--muted);font-weight:600;font-size:14px;}
+    header img {
+      height: 32px;
+      width: 32px;
+      animation: spin 1.5s linear infinite;
+    }
+    @keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
 
-  #spinner{display:flex;justify-content:center;align-items:center;height:120px;}
-  #spinner img{width:32px;height:32px;animation:spin 1.2s linear infinite;}
-  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+    .filters select {
+      flex: 1;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
 
-  .error{padding:12px;background:#fff1f2;border:1px solid #ffd4d7;color:#9b1c1c;border-radius:8px;margin-bottom:10px;}
+    #list {
+      padding: 10px;
+    }
 
-  /* === Estilo tabela no desktop === */
-  table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;
-        box-shadow:0 4px 14px rgba(0,0,0,0.05);}
-  th,td{padding:10px 12px;border-bottom:1px solid #f0f3f6;text-align:left;font-size:14px;}
-  th{background:#f8fff8;color:var(--azul);font-weight:600;}
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin: 0 0 5px;
+      font-size: 16px;
+      color: #c80000;
+    }
+    .card p {
+      margin: 2px 0;
+      font-size: 14px;
+    }
 
-  /* === Layout mobile: virar tabela em cartões === */
-  @media(max-width:720px){
-    table, thead, tbody, th, td, tr {display:block;}
-    thead{display:none;}
-    tr{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.04);margin-bottom:10px;padding:10px;}
-    td{border:none;padding:6px 0;font-size:14px;}
-    td::before{content:attr(data-label);font-weight:600;color:var(--muted);display:block;font-size:12px;margin-bottom:2px;}
-  }
-</style>
+    .loading {
+      text-align: center;
+      padding: 20px;
+    }
+    .loading img {
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="logo">
-    <h1>Planeamento</h1>
+    <img src="logo.png" id="logo" alt="logo">
+    <h1>Planeamento Transportes</h1>
   </header>
 
-  <main>
-    <div class="controls">
-      <select id="motoristaFilter"><option value="">Motorista — Todos</option></select>
-      <select id="mesFilter"><option value="">Mês — Todos</option></select>
-      <div id="count">Total 0</div>
-    </div>
+  <div class="filters">
+    <select id="motoristaFilter">
+      <option value="">Todos os Motoristas</option>
+    </select>
+    <select id="mesFilter">
+      <option value="">Todos os Meses</option>
+    </select>
+  </div>
 
-    <div id="spinner"><img src="logo.png" alt="A carregar..."></div>
-    <div id="error" style="display:none;"></div>
-    <div id="data"></div>
-  </main>
+  <div id="list">
+    <div class="loading"><img src="logo.png" alt="loading"></div>
+  </div>
 
-<script>
-/* ENDPOINT Apps Script */
-const ENDPOINT="https://script.google.com/macros/s/AKfycbyiC-zrIZMbOnr6yBSHHlwGmzGZSqJWAIaf6D6QELnKulXbGXCJ7-LXHtn5FTP7cNHY/exec";
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzz0EoiT8BFkbj0Mnq3Y1s3uSkYQ2TMU2sBVj93Y8DRMQ-pOry7XPI-vkJRE7Rd5Qyq/exec";
+    let dados = [];
 
-const spinnerEl=document.getElementById('spinner');
-const errorEl=document.getElementById('error');
-const dataEl=document.getElementById('data');
-const motoristaSel=document.getElementById('motoristaFilter');
-const mesSel=document.getElementById('mesFilter');
-const countEl=document.getElementById('count');
-let allData=[];
+    async function carregarDados() {
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error("Erro na resposta");
+        const json = await res.json();
+        dados = json.data || [];
+        preencherFiltros();
+        renderizar();
+      } catch (e) {
+        document.getElementById("list").innerHTML = "<p style='color:red;text-align:center'>Erro ao carregar dados.</p>";
+      }
+    }
 
-function parseDate(d){if(!d)return null;const p=String(d).split('/');if(p.length!==3)return new Date(d);return new Date(+p[2],+p[1]-1,+p[0]);}
-function getMesProc(ds){const m=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];const d=parseDate(ds);if(!d)return"";let mes=d.getMonth(),ano=(""+d.getFullYear()).slice(-2),dia=d.getDate();if(dia>=16){mes=(mes+1)%12;if(mes===0)ano=(""+(d.getFullYear()+1)).slice(-2);}return m[mes]+" "+ano;}
+    function preencherFiltros() {
+      const motoristaSelect = document.getElementById("motoristaFilter");
+      const mesSelect = document.getElementById("mesFilter");
 
-function showSpinner(){spinnerEl.style.display="";errorEl.style.display="none";dataEl.style.display="none";}
-function hideSpinner(){spinnerEl.style.display="none";dataEl.style.display="";}
-function showError(msg){errorEl.style.display="";errorEl.className="error";errorEl.textContent=msg;spinnerEl.style.display="none";dataEl.style.display="none";}
+      const motoristas = [...new Set(dados.map(d => d.Motorista))].filter(Boolean).sort();
+      motoristaSelect.innerHTML = "<option value=''>Todos os Motoristas</option>" + 
+        motoristas.map(m => `<option value="${m}">${m}</option>`).join("");
 
-function processPayload(payload){
-  const arr=Array.isArray(payload.data)?payload.data:[];
-  allData=arr.map(r=>({Data:r["Data"]||"",Viatura:r["Viatura"]||"",Motorista:r["Motorista"]||"",Cliente:r["Cliente"]||"",HoraEntrada:r["Hora Entrada"]||"",KmEntrada:r["Km Entrada"]||"",HoraSaida:r["Hora Saída"]||"",KmSaida:r["Km Saída"]||""}));
+      const meses = [...new Set(dados.map(d => calcularMes(d.Data)))].filter(Boolean);
+      mesSelect.innerHTML = "<option value=''>Todos os Meses</option>" + 
+        meses.map(m => `<option value="${m}">${m}</option>`).join("");
+    }
 
-  const motSet=[...new Set(allData.map(x=>x.Motorista).filter(Boolean))].sort();
-  motoristaSel.innerHTML='<option value="">Motorista — Todos</option>'+motSet.map(m=>`<option>${m}</option>`).join("");
-  const mesSet=[...new Set(allData.map(x=>getMesProc(x.Data)).filter(Boolean))].sort((a,b)=>new Date("1 "+a)-new Date("1 "+b));
-  mesSel.innerHTML='<option value="">Mês — Todos</option>'+mesSet.map(m=>`<option>${m}</option>`).join("");
+    function calcularMes(dataStr) {
+      if (!dataStr) return "";
+      const [dia, mes, ano] = dataStr.split("/");
+      const d = new Date(`${ano}-${mes}-${dia}`);
+      let mesProc, anoProc = ano.slice(-2);
 
-  motoristaSel.onchange=render;mesSel.onchange=render;
-  render();
-}
+      if (d.getDate() >= 16) {
+        mesProc = d.toLocaleString("pt-PT", { month: "long" });
+        anoProc = String(d.getFullYear()).slice(-2);
+      } else {
+        const prev = new Date(d);
+        prev.setMonth(d.getMonth() - 1);
+        mesProc = prev.toLocaleString("pt-PT", { month: "long" });
+        anoProc = String(prev.getFullYear()).slice(-2);
+      }
+      return mesProc.charAt(0).toUpperCase() + mesProc.slice(1) + " " + anoProc;
+    }
 
-function render(){
-  const mot=motoristaSel.value, mes=mesSel.value;
-  let list=allData.slice();
-  if(mot)list=list.filter(r=>r.Motorista===mot);
-  if(mes)list=list.filter(r=>getMesProc(r.Data)===mes);
+    function renderizar() {
+      const motorista = document.getElementById("motoristaFilter").value;
+      const mes = document.getElementById("mesFilter").value;
 
-  list.sort((a,b)=>parseDate(a.Data)-parseDate(b.Data) || a.Motorista.localeCompare(b.Motorista));
-  countEl.textContent="Total "+list.length;
-  if(!list.length){dataEl.innerHTML='<div style="padding:12px;color:var(--muted)">Nenhum registo.</div>';return;}
+      let filtrados = dados;
+      if (motorista) filtrados = filtrados.filter(d => d.Motorista === motorista);
+      if (mes) filtrados = filtrados.filter(d => calcularMes(d.Data) === mes);
 
-  let html='<table><thead><tr><th>Data</th><th>Viatura</th><th>Motorista</th><th>Cliente</th><th>Hora Entrada</th><th>Km Entrada</th><th>Hora Saída</th><th>Km Saída</th></tr></thead><tbody>';
-  list.forEach(r=>{
-    html+=`<tr>
-      <td data-label="Data">${r.Data}</td>
-      <td data-label="Viatura">${r.Viatura}</td>
-      <td data-label="Motorista">${r.Motorista}</td>
-      <td data-label="Cliente">${r.Cliente}</td>
-      <td data-label="Hora Entrada">${r.HoraEntrada}</td>
-      <td data-label="Km Entrada">${r.KmEntrada}</td>
-      <td data-label="Hora Saída">${r.HoraSaida}</td>
-      <td data-label="Km Saída">${r.KmSaida}</td>
-    </tr>`;
-  });
-  html+='</tbody></table>';dataEl.innerHTML=html;
-}
+      filtrados.sort((a,b)=>{
+        const [da,ma,aa] = a.Data.split("/");
+        const [db,mb,ab] = b.Data.split("/");
+        const dataA = new Date(`${aa}-${ma}-${da}`);
+        const dataB = new Date(`${ab}-${mb}-${db}`);
+        if (dataA - dataB !== 0) return dataA - dataB;
+        return a.Motorista.localeCompare(b.Motorista);
+      });
 
-async function loadData(){
-  showSpinner();
-  try{
-    const res=await fetch(ENDPOINT+"?cachebust="+Date.now());
-    const json=await res.json();
-    processPayload(json);
-    hideSpinner();
-  }catch(e){showError("Erro ao carregar dados: "+e.message);}
-}
-loadData();
-</script>
+      document.getElementById("list").innerHTML = filtrados.map(d => `
+        <div class="card">
+          <h3>${d.Data} - ${d.Motorista}</h3>
+          <p><strong>Viatura:</strong> ${d.Viatura || ""}</p>
+          <p><strong>Cliente:</strong> ${d.Cliente || ""}</p>
+          <p><strong>Entrada:</strong> ${d["Hora Entrada"] || ""} | Km: ${d["Km Entrada"] || ""}</p>
+          <p><strong>Saída:</strong> ${d["Hora Saída"] || ""} | Km: ${d["Km Saída"] || ""}</p>
+        </div>
+      `).join("") || "<p style='text-align:center'>Sem registos.</p>";
+    }
+
+    document.getElementById("motoristaFilter").addEventListener("change", renderizar);
+    document.getElementById("mesFilter").addEventListener("change", renderizar);
+
+    carregarDados();
+  </script>
 </body>
 </html>
