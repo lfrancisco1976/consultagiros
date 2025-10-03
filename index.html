@@ -1,567 +1,227 @@
-<!doctype html>
-<html lang="pt-PT">
+<!DOCTYPE html>
+<html lang="pt">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Planeamento Semanal — Transportes</title>
-  <meta name="description" content="Visualizador de Giros" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registos de Serviço</title>
   <style>
-    :root{
-      --verde: #78c142;       /* verde do logo */
-      --azul: #0e3a5a;        /* azul escuro do logo */
-      --bg: #f6f8fb;
-      --card: #ffffff;
-      --muted: #6b7280;
-      --glass: rgba(255,255,255,0.6);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8fafc;
+      color: #1e293b;
     }
-
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background: linear-gradient(180deg, #f6fbf6 0%, var(--bg) 100%);
-      color:#0b1b2b;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(90deg, #5dbb63, #153c63);
+      color: white;
+      padding: 12px 20px;
     }
-
-    header{
-      display:flex;
-      gap:16px;
-      align-items:center;
-      padding:18px;
+    header img {
+      height: 40px;
+      width: 40px;
+    }
+    header h1 {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+    main {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    select {
+      padding: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      min-width: 180px;
+    }
+    #count {
+      margin-top: 8px;
+      font-weight: 500;
+      color: #153c63;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
       background: white;
-      border-bottom: 1px solid #e6edf3;
-      box-shadow: 0 1px 0 rgba(10,20,30,0.02);
-      position:sticky;
-      top:0;
-      z-index:10;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .brand{
-      display:flex;
-      gap:12px;
-      align-items:center;
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
     }
-    .brand img{ width:48px; height:48px; object-fit:contain; }
-    h1{ font-size:18px; margin:0; letter-spacing:-0.2px; }
-    .subtitle{ font-size:12px; color:var(--muted); margin-top:2px; }
-
-    main{ padding:20px; max-width:1100px; margin:20px auto; width:100%; flex:1; }
-
-    .controls{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-bottom:16px;
+    th {
+      background: #e6f4ea;
+      color: #153c63;
+      font-weight: 600;
     }
-
-    .select, .btn {
-      padding:10px 12px;
-      border-radius:10px;
-      border:1px solid #e3eef8;
-      background:var(--card);
-      min-width:160px;
-      font-size:14px;
-      box-shadow: 0 1px 4px rgba(11,27,40,0.03);
+    tr:hover {
+      background: #f1f5f9;
     }
-
-    .select:focus, .btn:focus{ outline:3px solid rgba(120,193,66,0.14); }
-
-    .btn {
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      cursor:pointer;
-      border:none;
+    #spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
     }
-
-    .btn-primary{
-      background: linear-gradient(90deg,var(--verde),#6fc03f);
-      color:white;
-      padding:10px 14px;
-      border-radius:10px;
-      box-shadow: 0 6px 18px rgba(120,193,66,0.18);
-      border: none;
+    #spinner img {
+      width: 60px;
+      height: 60px;
+      animation: spin 1.5s linear infinite;
     }
-
-    .btn-ghost{
-      background:transparent;
-      border:1px solid #dbeef6;
-      color:var(--azul);
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
     }
-
-    .panel{
-      background:linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.9));
-      border-radius:14px;
-      padding:14px;
-      box-shadow: 0 6px 30px rgba(13,28,46,0.05);
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 320px;
-      gap:16px;
-      align-items:start;
-    }
-
-    @media (max-width:960px){
-      .grid{ grid-template-columns: 1fr; }
-      .controls{ justify-content:space-between; }
-    }
-
-    /* Lista de registos */
-    .list{
-      margin-top:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .item{
-      display:grid;
-      grid-template-columns: 120px 1fr 140px;
-      gap:10px;
-      align-items:center;
-      padding:10px;
-      border-radius:10px;
-      border:1px solid #f0f5f8;
-      background:linear-gradient(180deg,#fff,#fcfeff);
-    }
-    .item .date{ font-weight:600; color:var(--azul); }
-    .item .meta{ font-size:13px; color:#11324a; }
-    .item .muted{ font-size:13px; color:var(--muted); }
-
-    .controls-right{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:stretch;
-    }
-
-    .small{
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    /* spinner overlay */
-    .overlay{
-      position:fixed;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: rgba(255,255,255,0.6);
-      z-index:200;
-      transition:opacity .2s ease;
-    }
-
-    .hidden{ display:none !important; opacity:0; pointer-events:none; }
-
-    footer{
-      text-align:center;
-      padding:18px 12px;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    /* badges */
-    .badge{
-      display:inline-block;
-      padding:6px 8px;
-      background:#eef9f0;
-      color:var(--verde);
-      border-radius:999px;
-      font-weight:600;
-      font-size:12px;
-      border:1px solid rgba(120,193,66,0.12);
-    }
-
   </style>
 </head>
 <body>
   <header>
-    <div class="brand">
-      <img src="./logo.png" alt="logo" />
-      <div>
-        <h1>Planeamento — Transportes</h1>
-        <div class="subtitle">Luis Francisco (pub)</div>
-      </div>
-    </div>
-    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
-      <button id="refreshBtn" class="btn btn-ghost">🔄 Atualizar</button>
-      <button id="clearFilters" class="btn">✖ Limpar filtros</button>
-    </div>
+    <img src="logo.png" alt="Logo">
+    <h1>Registos de Serviço</h1>
   </header>
-
   <main>
-    <div class="grid">
-      <section>
-        <div class="panel">
-          <div class="controls">
-            <select id="motoristaFilter" class="select" aria-label="Filtrar por motorista">
-              <option value="">Motorista: — Todos —</option>
-            </select>
-
-            <select id="mesFilter" class="select" aria-label="Filtrar por mês processamento">
-              <option value="">Mês: — Todos —</option>
-            </select>
-
-            <div style="flex:1"></div>
-
-            <div class="small">Registos: <span id="count">0</span></div>
-          </div>
-
-          <div id="list" class="list" aria-live="polite">
-            <!-- items aqui -->
-          </div>
-        </div>
-      </section>
-
-      <aside>
-        <div class="panel">
-          <h3 style="margin:0 0 8px 0">Resumo</h3>
-          <div class="small">Selecione filtros para restringir a lista. Se nada for seleccionado, serão mostrados todos os registos.</div>
-
-          <div style="margin-top:12px;">
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-              <span class="badge" id="badgeTotal">Total 0</span>
-              <span style="font-size:13px; color:var(--muted);">• Ordenado por data e motorista</span>
-            </div>
-            <div style="margin-top:10px;">
-              <button id="openGithub" class="btn btn-primary" style="width:100%;">Abrir no GitHub</button>
-            </div>
-          </div>
-        </div>
-      </aside>
+    <div class="filters">
+      <select id="motoristaFilter">
+        <option value="">Todos os Motoristas</option>
+      </select>
+      <select id="mesFilter">
+        <option value="">Todos os Meses</option>
+      </select>
     </div>
+    <div id="count"></div>
+    <div id="spinner"><img src="logo.png" alt="A carregar..."></div>
+    <div id="data"></div>
   </main>
 
-  <footer>
-    Criado automaticamente • Basta colocar este ficheiro e o logo no seu repositório GitHub.
-  </footer>
-
-  <!-- Spinner / overlay -->
-  <div id="overlay" class="overlay">
-    <div style="text-align:center;">
-      <img src="./logo.png" alt="loading" style="width:120px;height:120px;object-fit:contain;animation:spin 1.4s linear infinite;">
-      <div style="margin-top:12px; font-weight:600; color:var(--azul)">A carregar dados…</div>
-    </div>
-  </div>
-
   <script>
-    /************************************************************************
-     * CONFIG
-     ************************************************************************/
-    // URL da sheet publicada — substitua por outra se necessário:
-    const SHEET_CSV_URL = "https://script.google.com/macros/library/d/1IEOIY1_ISTmR1Y75B2xuQmliZKtL8oPAKXkdDemm4YgdDudrxIG5Ey04/3";
+    const endpoint = "https://script.google.com/macros/s/AKfycbzz0EoiT8BFkbj0Mnq3Y1s3uSkYQ2TMU2sBVj93Y8DRMQ-pOry7XPI-vkJRE7Rd5Qyq/exec";
 
-    // Quais são as colunas esperadas no CSV (nomes aproximados; o parser procura por essas chaves)
-    const EXPECTED_COLUMNS = [
-      "Data", "Viatura", "Motorista", "Cliente", "Hora Entrada", "Km Entrada", "Hora Saída", "Km Saída"
-    ];
+    let allData = [];
 
-    // meses em PT
-    const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    // Calcular mês de processamento (16/mm -> 15/mm+1)
+    function getMesProcessamento(dateStr) {
+      const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "Inválido";
+      let mes = d.getMonth();
+      let ano = String(d.getFullYear()).slice(-2);
+      let dia = d.getDate();
 
-    /************************************************************************
-     * UTIL
-     ************************************************************************/
-    function qs(sel){ return document.querySelector(sel); }
-    function qsa(sel){ return Array.from(document.querySelectorAll(sel)); }
-    const overlay = qs('#overlay');
-
-    function showLoading(){ overlay.classList.remove('hidden'); }
-    function hideLoading(){ overlay.classList.add('hidden'); }
-
-    // parse CSV simples (trata campos com " e vírgulas internas)
-    function parseCSV(text){
-      const lines = [];
-      let cur = '';
-      let row = [];
-      let inQuotes = false;
-      for (let i=0;i<text.length;i++){
-        const ch = text[i];
-        if (ch === '"' ) {
-          // lookahead for escaped quote
-          if (inQuotes && text[i+1] === '"') { cur += '"'; i++; continue; }
-          inQuotes = !inQuotes;
-          continue;
-        }
-        if (!inQuotes && (ch === '\n' || ch === '\r')) {
-          if (ch === '\r' && text[i+1] === '\n') { /* windows CRLF, skip */ }
-          if (cur !== '' || row.length) {
-            row.push(cur);
-            lines.push(row);
-            row = [];
-            cur = '';
-          }
-          // skip extra newlines
-          while ((text[i+1] === '\n' || text[i+1] === '\r')) i++;
-          continue;
-        }
-        if (!inQuotes && ch === ',') {
-          row.push(cur);
-          cur = '';
-          continue;
-        }
-        cur += ch;
+      if (dia >= 16) {
+        // vai para o mês seguinte
+        mes = (mes + 1) % 12;
+        if (mes === 0) ano = String(d.getFullYear()+1).slice(-2);
       }
-      if (cur !== '' || row.length) {
-        row.push(cur);
-        lines.push(row);
-      }
-      // first row as header
-      const header = lines.shift().map(h => h.trim());
-      return lines.map(r => {
-        const obj = {};
-        for (let i=0;i<header.length;i++){
-          obj[header[i]] = (r[i] !== undefined ? r[i].trim() : '');
-        }
-        return obj;
-      });
+      return meses[mes] + " " + ano;
     }
 
-    // tenta analisar datas em formatos comuns: dd/mm/yyyy ou yyyy-mm-dd ou mm/dd/yyyy
-    function parseDateGuess(s){
-      if (!s) return null;
-      s = s.trim();
-      // dd/mm/yyyy or d/m/yyyy
-      const dmy = s.match(/^(\d{1,2})[\/\.-](\d{1,2})[\/\.-](\d{2,4})$/);
-      if (dmy){
-        let day = parseInt(dmy[1],10), month = parseInt(dmy[2],10)-1, year = parseInt(dmy[3],10);
-        if (year < 100) year += 2000;
-        return new Date(year, month, day);
+    async function loadData() {
+      try {
+        const res = await fetch(endpoint);
+        const json = await res.json();
+        allData = json.data.map(r => ({
+          Data: r["Data"],
+          Viatura: r["Viatura"],
+          Motorista: r["Motorista"],
+          Cliente: r["Cliente"],
+          HoraEntrada: r["Hora Entrada"],
+          KmEntrada: r["Km Entrada"],
+          HoraSaida: r["Hora Saída"],
+          KmSaida: r["Km Saída"],
+          MesProc: getMesProcessamento(r["Data"])
+        }));
+
+        populateFilters();
+        render();
+      } catch (e) {
+        document.getElementById("data").innerHTML = "<p>Erro ao carregar dados.</p>";
+      } finally {
+        document.getElementById("spinner").style.display = "none";
       }
-      // yyyy-mm-dd
-      const ymd = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-      if (ymd){
-        return new Date(parseInt(ymd[1],10), parseInt(ymd[2],10)-1, parseInt(ymd[3],10));
-      }
-      // fallback: try Date.parse
-      const d = new Date(s);
-      if (!isNaN(d.getTime())) return d;
-      return null;
     }
 
-    // formata datetime dd/mm/yyyy
-    function fmtDate(d){
-      if (!d) return '';
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const yyyy = d.getFullYear();
-      return `${dd}/${mm}/${yyyy}`;
-    }
-
-    // retorna label do "mês processamento": regra -> se dia >= 16 => mês seguinte; senão mês corrente.
-    function processingMonthLabel(date){
-      if (!date) return '';
-      const day = date.getDate();
-      let month = date.getMonth();
-      let year = date.getFullYear();
-      if (day >= 16){
-        month += 1;
-        if (month > 11) { month = 0; year += 1; }
-      }
-      const yy = String(year).slice(-2);
-      return `${MONTHS_PT[month]} ${yy}`;
-    }
-
-    /************************************************************************
-     * LÓGICA DE DADOS
-     ************************************************************************/
-    let rawRows = []; // objetos originais
-    let rows = []; // normalizados com campos importantes
-    let uniqueMotoristas = new Set();
-    let uniqueProcessingMonths = new Set();
-
-    function normalizeRows(parsed){
-      rawRows = parsed;
-      rows = parsed.map(r => {
-        // detect keys by approximate name — somamos tolerância ao espaço e caixa
-        function getField(names){
-          for (const k of Object.keys(r)){
-            const kk = k.trim().toLowerCase();
-            for (const nm of names){
-              if (kk === nm.toLowerCase()) return r[k];
-            }
-          }
-          return '';
-        }
-
-        const dataRaw = getField(['Data','DATA','data','Data Serviço','Data Servico']);
-        const viatura = getField(['Viatura','VIATURA','viatura']);
-        const motorista = getField(['Motorista','MOTORISTA','motorista']);
-        const cliente = getField(['Cliente','CLIENTE','cliente']);
-        const horaEntrada = getField(['Hora Entrada','HORA ENTRADA','HoraEntrada','hora entrada']);
-        const kmEntrada = getField(['Km Entrada','KM ENTRADA','KmEntrada','km entrada']);
-        const horaSaida = getField(['Hora Saída','Hora Saida','HORA SAÍDA','HoraSaida','hora saida']);
-        const kmSaida = getField(['Km Saída','KM SAÍDA','KmSaida','km saida']);
-
-        const date = parseDateGuess(dataRaw);
-        const procLabel = date ? processingMonthLabel(date) : '';
-
-        return {
-          raw: r,
-          Data_raw: dataRaw,
-          Data: date,
-          Data_for_sort: date ? date.getTime() : 0,
-          Viatura: viatura,
-          Motorista: motorista,
-          Cliente: cliente,
-          HoraEntrada: horaEntrada,
-          KmEntrada: kmEntrada,
-          HoraSaida: horaSaida,
-          KmSaida: kmSaida,
-          ProcMonth: procLabel
-        };
+    function populateFilters() {
+      const motoristas = [...new Set(allData.map(r => r.Motorista).filter(Boolean))].sort();
+      const meses = [...new Set(allData.map(r => r.MesProc))].sort((a,b)=> {
+        const [ma,aa]=a.split(" ");
+        const [mb,ab]=b.split(" ");
+        return new Date("1 "+ma+" 20"+aa) - new Date("1 "+mb+" 20"+ab);
       });
 
-      // compute uniques
-      uniqueMotoristas = new Set(rows.map(x => x.Motorista).filter(v => v && v.trim() !== ''));
-      uniqueProcessingMonths = new Set(rows.map(x => x.ProcMonth).filter(v => v && v.trim() !== ''));
-
-      // sort by date then motorista
-      rows.sort((a,b) => {
-        if (a.Data_for_sort !== b.Data_for_sort) return a.Data_for_sort - b.Data_for_sort;
-        const A = (a.Motorista||'').toLowerCase();
-        const B = (b.Motorista||'').toLowerCase();
-        return A < B ? -1 : (A > B ? 1 : 0);
+      const mSel = document.getElementById("motoristaFilter");
+      motoristas.forEach(m=>{
+        const opt=document.createElement("option");
+        opt.value=m; opt.textContent=m;
+        mSel.appendChild(opt);
       });
 
-      renderFilters();
-      applyFiltersAndRender();
-    }
-
-    /************************************************************************
-     * RENDER
-     ************************************************************************/
-    function renderFilters(){
-      const motoristaSelect = qs('#motoristaFilter');
-      motoristaSelect.innerHTML = '<option value="">Motorista: — Todos —</option>';
-      Array.from(uniqueMotoristas).sort((a,b)=> a.localeCompare(b)).forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m;
-        opt.textContent = m;
-        motoristaSelect.appendChild(opt);
+      const mesSel = document.getElementById("mesFilter");
+      meses.forEach(m=>{
+        const opt=document.createElement("option");
+        opt.value=m; opt.textContent=m;
+        mesSel.appendChild(opt);
       });
 
-      const mesSelect = qs('#mesFilter');
-      mesSelect.innerHTML = '<option value="">Mês: — Todos —</option>';
-      Array.from(uniqueProcessingMonths).sort((a,b) => {
-        // ordenar por ano e mês: extrai mês index
-        function key(s){
-          if (!s) return '';
-          const parts = s.split(' ');
-          const monthName = parts.slice(0,-1).join(' ');
-          const yy = parts[parts.length-1];
-          const monthIndex = MONTHS_PT.indexOf(monthName);
-          return (Number(yy) + 2000)*100 + (monthIndex+1);
-        }
-        return key(a) - key(b);
-      }).forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m;
-        opt.textContent = m;
-        mesSelect.appendChild(opt);
-      });
+      mSel.addEventListener("change", render);
+      mesSel.addEventListener("change", render);
     }
 
-    function applyFiltersAndRender(){
-      const motoristaVal = qs('#motoristaFilter').value;
-      const mesVal = qs('#mesFilter').value;
+    function render() {
+      const motoristaVal = document.getElementById("motoristaFilter").value;
+      const mesVal = document.getElementById("mesFilter").value;
 
-      let filtered = rows.filter(r => {
-        if (motoristaVal && motoristaVal !== '' && (r.Motorista||'') !== motoristaVal) return false;
-        if (mesVal && mesVal !== '' && (r.ProcMonth||'') !== mesVal) return false;
-        return true;
+      let data = [...allData];
+      if (motoristaVal) data = data.filter(r=>r.Motorista===motoristaVal);
+      if (mesVal) data = data.filter(r=>r.MesProc===mesVal);
+
+      // ordenar por Data e Motorista
+      data.sort((a,b)=>{
+        const da=new Date(a.Data), db=new Date(b.Data);
+        if (da-db!==0) return da-db;
+        return a.Motorista.localeCompare(b.Motorista);
       });
 
-      // already sorted in normalizeRows; but if needed, re-sort by date then motorista:
-      filtered.sort((a,b) => {
-        if (a.Data_for_sort !== b.Data_for_sort) return a.Data_for_sort - b.Data_for_sort;
-        const A = (a.Motorista||'').toLowerCase();
-        const B = (b.Motorista||'').toLowerCase();
-        return A < B ? -1 : (A > B ? 1 : 0);
+      document.getElementById("count").textContent = "Total " + data.length;
+
+      let html = "<table><thead><tr>";
+      ["Data","Viatura","Motorista","Cliente","HoraEntrada","KmEntrada","HoraSaida","KmSaida"]
+        .forEach(c=>{
+          html += "<th>"+c.replace(/([A-Z])/g," $1")+"</th>";
+        });
+      html += "</tr></thead><tbody>";
+
+      data.forEach(r=>{
+        html += "<tr>"+
+          "<td>"+r.Data+"</td>"+
+          "<td>"+r.Viatura+"</td>"+
+          "<td>"+r.Motorista+"</td>"+
+          "<td>"+r.Cliente+"</td>"+
+          "<td>"+r.HoraEntrada+"</td>"+
+          "<td>"+r.KmEntrada+"</td>"+
+          "<td>"+r.HoraSaida+"</td>"+
+          "<td>"+r.KmSaida+"</td>"+
+        "</tr>";
       });
 
-      renderList(filtered);
+      html += "</tbody></table>";
+      document.getElementById("data").innerHTML = html;
     }
 
-    function renderList(list){
-      const container = qs('#list');
-      container.innerHTML = '';
-      qs('#count').textContent = String(list.length);
-      qs('#badgeTotal').textContent = 'Total ' + list.length;
-
-      if (list.length === 0){
-        container.innerHTML = '<div class="small" style="padding:14px;color:var(--muted)">Nenhum registo encontrado.</div>';
-        return;
-      }
-
-      for (const r of list){
-        const item = document.createElement('div');
-        item.className = 'item';
-
-        const dateCell = document.createElement('div');
-        dateCell.innerHTML = `<div class="date">${fmtDate(r.Data) || r.Data_raw || '-'}</div>
-                              <div class="muted">${r.ProcMonth || ''}</div>`;
-
-        const middle = document.createElement('div');
-        middle.innerHTML = `<div class="meta"><strong>${r.Viatura || '-'}</strong> — ${r.Cliente || '-'}</div>
-                            <div class="small">Entrada: ${r.HoraEntrada||'-'} • ${r.KmEntrada||'-'} — Saída: ${r.HoraSaida||'-'} • ${r.KmSaida||'-'}</div>`;
-
-        const right = document.createElement('div');
-        right.innerHTML = `<div style="font-weight:700">${r.Motorista || '-'}</div>
-                           <div class="small"> </div>`;
-
-        item.appendChild(dateCell);
-        item.appendChild(middle);
-        item.appendChild(right);
-
-        container.appendChild(item);
-      }
-    }
-
-    /************************************************************************
-     * FETCH
-     ************************************************************************/
-    async function fetchAndLoad(){
-      try{
-        showLoading();
-        const res = await fetch(SHEET_CSV_URL);
-        if (!res.ok) throw new Error('Erro ao buscar a sheet ('+res.status+')');
-        const txt = await res.text();
-        const parsed = parseCSV(txt);
-        normalizeRows(parsed);
-      }catch(err){
-        alert('Erro ao carregar dados: ' + (err.message||err));
-        console.error(err);
-      }finally{
-        hideLoading();
-      }
-    }
-
-    /************************************************************************
-     * EVENTOS
-     ************************************************************************/
-    qs('#motoristaFilter').addEventListener('change', applyFiltersAndRender);
-    qs('#mesFilter').addEventListener('change', applyFiltersAndRender);
-    qs('#clearFilters').addEventListener('click', () => {
-      qs('#motoristaFilter').value = '';
-      qs('#mesFilter').value = '';
-      applyFiltersAndRender();
-    });
-    qs('#refreshBtn').addEventListener('click', () => fetchAndLoad());
-    qs('#openGithub').addEventListener('click', () => {
-      // aponta para o repo (sugestão, alterar para o seu repo)
-      window.open('https://github.com', '_blank');
-    });
-
-    // carregar inicialmente
-    fetchAndLoad();
+    loadData();
   </script>
 </body>
 </html>
