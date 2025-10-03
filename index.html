@@ -108,21 +108,27 @@
   </main>
 
   <script>
-    const endpoint = "https://script.google.com/macros/s/AKfycbxznZB_Qv2X9Uk4CGTNuWc8WKY7t5DCwvmmXw8HICcL2-jM1ZvWkKBcyuIB4ZD4xNM/exec";
+    const endpoint = "COLOQUE_AQUI_O_SEU_ENDPOINT_APPS_SCRIPT";
 
     let allData = [];
 
-    // Calcular mês de processamento (16/mm -> 15/mm+1)
+    // Converter "dd/MM/yyyy" em Date
+    function parseDate(d) {
+      if (!d) return null;
+      const [dia, mes, ano] = d.split("/");
+      return new Date(+ano, mes - 1, +dia);
+    }
+
+    // Calcular mês de processamento
     function getMesProcessamento(dateStr) {
       const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-      const d = new Date(dateStr);
-      if (isNaN(d)) return "Inválido";
+      const d = parseDate(dateStr);
+      if (!d) return "Inválido";
       let mes = d.getMonth();
       let ano = String(d.getFullYear()).slice(-2);
       let dia = d.getDate();
 
       if (dia >= 16) {
-        // vai para o mês seguinte
         mes = (mes + 1) % 12;
         if (mes === 0) ano = String(d.getFullYear()+1).slice(-2);
       }
@@ -149,6 +155,7 @@
         render();
       } catch (e) {
         document.getElementById("data").innerHTML = "<p>Erro ao carregar dados.</p>";
+        console.error("Erro:", e);
       } finally {
         document.getElementById("spinner").style.display = "none";
       }
@@ -156,11 +163,7 @@
 
     function populateFilters() {
       const motoristas = [...new Set(allData.map(r => r.Motorista).filter(Boolean))].sort();
-      const meses = [...new Set(allData.map(r => r.MesProc))].sort((a,b)=> {
-        const [ma,aa]=a.split(" ");
-        const [mb,ab]=b.split(" ");
-        return new Date("1 "+ma+" 20"+aa) - new Date("1 "+mb+" 20"+ab);
-      });
+      const meses = [...new Set(allData.map(r => r.MesProc))];
 
       const mSel = document.getElementById("motoristaFilter");
       motoristas.forEach(m=>{
@@ -188,11 +191,11 @@
       if (motoristaVal) data = data.filter(r=>r.Motorista===motoristaVal);
       if (mesVal) data = data.filter(r=>r.MesProc===mesVal);
 
-      // ordenar por Data e Motorista
+      // Ordenar por Data real e depois Motorista
       data.sort((a,b)=>{
-        const da=new Date(a.Data), db=new Date(b.Data);
+        const da=parseDate(a.Data), db=parseDate(b.Data);
         if (da-db!==0) return da-db;
-        return a.Motorista.localeCompare(b.Motorista);
+        return (a.Motorista||"").localeCompare(b.Motorista||"");
       });
 
       document.getElementById("count").textContent = "Total " + data.length;
@@ -200,20 +203,20 @@
       let html = "<table><thead><tr>";
       ["Data","Viatura","Motorista","Cliente","HoraEntrada","KmEntrada","HoraSaida","KmSaida"]
         .forEach(c=>{
-          html += "<th>"+c.replace(/([A-Z])/g," $1")+"</th>";
+          html += "<th>"+c.replace(/([A-Z])/g," $1").trim()+"</th>";
         });
       html += "</tr></thead><tbody>";
 
       data.forEach(r=>{
         html += "<tr>"+
-          "<td>"+r.Data+"</td>"+
-          "<td>"+r.Viatura+"</td>"+
-          "<td>"+r.Motorista+"</td>"+
-          "<td>"+r.Cliente+"</td>"+
-          "<td>"+r.HoraEntrada+"</td>"+
-          "<td>"+r.KmEntrada+"</td>"+
-          "<td>"+r.HoraSaida+"</td>"+
-          "<td>"+r.KmSaida+"</td>"+
+          "<td>"+(r.Data||"")+"</td>"+
+          "<td>"+(r.Viatura||"")+"</td>"+
+          "<td>"+(r.Motorista||"")+"</td>"+
+          "<td>"+(r.Cliente||"")+"</td>"+
+          "<td>"+(r.HoraEntrada||"")+"</td>"+
+          "<td>"+(r.KmEntrada||"")+"</td>"+
+          "<td>"+(r.HoraSaida||"")+"</td>"+
+          "<td>"+(r.KmSaida||"")+"</td>"+
         "</tr>";
       });
 
